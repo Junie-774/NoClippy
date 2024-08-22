@@ -77,8 +77,21 @@ namespace NoClippy.Modules
             DalamudApi.LogDebug($"Recorded new animation lock value of {F2MS(animationLock)} ms for {actionID}");
         }
 
+
+        private DateTime? lastAction = null!;
         private unsafe void UseActionLocation(nint actionManager, uint actionType, uint actionID, ulong targetedActorID, nint vectorLocation, uint param, byte ret)
         {
+            var currTime = DateTime.Now;
+            if (lastAction != null)
+            {
+                var elapsed = currTime - lastAction;
+                DalamudApi.LogDebug($"{elapsed}");
+            }
+            else
+            {
+                DalamudApi.LogDebug($"0");
+            }
+            lastAction = currTime;
             packetsSent = intervalPackets.Sum();
 
             if (Game.actionManager->animationLock != Game.DefaultClientAnimationLock) return;
@@ -89,7 +102,7 @@ namespace NoClippy.Modules
                 Game.actionManager->animationLock = animationLock;
             appliedAnimationLocks[Game.actionManager->currentSequence] = animationLock;
 
-            DalamudApi.LogDebug($"Applying {F2MS(animationLock)} ms animation lock for {actionType} {actionID} ({id})");
+            //DalamudApi.LogDebug($"Applying {F2MS(animationLock)} ms animation lock for {actionType} {actionID} ({id})");
         }
 
         private void CastBegin(ulong objectID, nint packetData) => isCasting = true;
